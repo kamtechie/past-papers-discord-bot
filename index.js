@@ -2,6 +2,9 @@
 const Discord = require('discord.js')
 const client = new Discord.Client();
 
+
+require('dotenv').config();
+
 // Register an event so that when the bot is ready, it will log a messsage to the terminal
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -21,4 +24,4 @@ client.on('message', async msg => {
 })
 
 // client.login logs the bot in and sets it up for use. You'll enter your token here.
-client.login('NzAzMzg3NDU0NTEzODcyOTA2.XqN2sQ.o7p_v78VnCehEXzt8Ucwi2X-ZjM');
+client.login(process.env.DISCORD_BOT_TOKEN);
