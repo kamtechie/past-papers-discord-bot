@@ -1,3 +1,5 @@
-This repository is part of a series on my website [brianmorrison.me](https://brianmorrison.me).
+# Past Paper Discord Bot
 
-You can find the cooresponding article here: [brianmorrison.me/blog/building-a-hello-world-discord-bot](https://brianmorrison.me/blog/building-a-hello-world-discord-bot)
+A Discord bot that allows searching for CAIE pastpapers within a channel. Will also detect any screenshots of a past paper question sent in and detect which paper it is from.
+
+Built on top of the paper.sc API. All papers are © UCLES.

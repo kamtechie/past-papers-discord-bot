@@ -20,7 +20,6 @@ client.on("message", async (msg) => {
 
   if (msg.attachments.size > 0) {
     console.log(msg.attachments.array()[0].url);
-    let user_message = await msg.lineReply("Checking for text in image..");
     const ocr_result = await Tesseract.recognize(
       msg.attachments.array()[0].url,
       "eng",
@@ -33,6 +32,13 @@ client.on("message", async (msg) => {
       }
     );
     const text = ocr_result.data.text;
+
+    // error out if text too short - there was probably none to begin with
+    if (text.length < 20) {
+      console.log("no text to search")
+      return;
+    }
+
     const pp_search_result = await axios.get("https://paper.sc/search", {
       params: { as: "json", query: text },
     });
@@ -40,15 +46,18 @@ client.on("message", async (msg) => {
 
     const imgResultEmbed = new Discord.MessageEmbed()
       .setColor("#0099ff")
-      .setTitle("Paper Found")
-      .setDescription(
-        `${paper_match.doc.subject} ${paper_match.doc.time} Paper ${paper_match.doc.paper} Variant ${paper_match.doc.variant}`
+      .setTitle("Past Paper Detected")
+      .addFields(
+        { name: "Subject Code", value: paper_match.doc.subject, inline: true },
+        { name: "Session", value: paper_match.doc.time, inline: true },
+        { name: "Paper", value: paper_match.doc.paper, inline: true },
+        { name: "Variant", value: paper_match.doc.variant, inline: true }
       )
       .setURL(`https://paper.sc/doc/${paper_match.doc._id}`)
       .setTimestamp()
-      .setFooter("Made with ❤️ by TheKarlos#5992 - Powered by paper.sc");
+      .setFooter("Made with ❤️ by TheKarlos#5992 - powered by paper.sc");
 
-    user_message.edit(imgResultEmbed);
+    msg.lineReply(imgResultEmbed);
   }
 });
 
