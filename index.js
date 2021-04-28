@@ -1,27 +1,40 @@
 // Import discord.js and create the client
-const Discord = require('discord.js')
+const Discord = require("discord.js");
+require("discord-reply"); // TODO: replace this with discord.js built in method once v13 comes out
 const client = new Discord.Client();
 
+require("dotenv").config();
 
-require('dotenv').config();
+const axios = require("axios");
 
-// Register an event so that when the bot is ready, it will log a messsage to the terminal
-client.on('ready', () => {
+const Tesseract = require("tesseract.js");
+
+client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
-})
+});
 
-// Register an event to handle incoming messages
-client.on('message', async msg => {
-  // This block will prevent the bot from responding to itself and other bots
-  if(msg.author.bot) {
-    return
+client.on("message", async (msg) => {
+  if (msg.author.bot) {
+    return;
   }
 
-  // Check if the message starts with '!hello' and respond with 'world!' if it does.
-  if(msg.content.startsWith("!hello")) {
-    msg.reply("world!")
+  if (msg.attachments.size > 0) {
+    console.log(msg.attachments.array()[0].url);
+    let user_message = await msg.lineReply("Checking for text in image..");
+    const ocr_result = await Tesseract.recognize(
+      msg.attachments.array()[0].url,
+      "eng",
+      { logger: (m) => console.log(m) }
+    );
+    const text = ocr_result.data.text;
+    const pp_search_result = await axios.get("https://paper.sc/search", {
+      params: { as: "json", query: text },
+    });
+    const paper_match = pp_search_result.data.list[0];
+    user_message.edit(
+      `I think this is from ${paper_match.doc.subject} ${paper_match.doc.time} paper ${paper_match.doc.paper} variant ${paper_match.doc.variant}`
+    );
   }
-})
+});
 
-// client.login logs the bot in and sets it up for use. You'll enter your token here.
 client.login(process.env.DISCORD_BOT_TOKEN);
