@@ -24,16 +24,31 @@ client.on("message", async (msg) => {
     const ocr_result = await Tesseract.recognize(
       msg.attachments.array()[0].url,
       "eng",
-      { logger: (m) => console.log(m) }
+      {
+        logger: (m) => {
+          if (m.status == "recognizing text") {
+            console.log(m.progress);
+          }
+        },
+      }
     );
     const text = ocr_result.data.text;
     const pp_search_result = await axios.get("https://paper.sc/search", {
       params: { as: "json", query: text },
     });
     const paper_match = pp_search_result.data.list[0];
-    user_message.edit(
-      `I think this is from ${paper_match.doc.subject} ${paper_match.doc.time} paper ${paper_match.doc.paper} variant ${paper_match.doc.variant}`
-    );
+
+    const imgResultEmbed = new Discord.MessageEmbed()
+      .setColor("#0099ff")
+      .setTitle("Paper Found")
+      .setDescription(
+        `${paper_match.doc.subject} ${paper_match.doc.time} Paper ${paper_match.doc.paper} Variant ${paper_match.doc.variant}`
+      )
+      .setURL(`https://paper.sc/doc/${paper_match.doc._id}`)
+      .setTimestamp()
+      .setFooter("Made with ❤️ by TheKarlos#5992 - Powered by paper.sc");
+
+    user_message.edit(imgResultEmbed);
   }
 });
 
